@@ -1,0 +1,168 @@
+import java.util.*;
+/**The HangmanManager Class is the template for the 
+*creation of the HangmanManager objects.
+*It has all the fields and methods of the objects of type
+*HangmanManager. 
+*@author Nkengla Muluh Awa Junior
+*@version 05/01/2018
+*/
+public class HangmanManager {
+ private String pattern;
+ private int maxLength;
+ private int maximum;
+ private Set<String> mySet;
+ private SortedSet<Character> mySorted;
+ /**The Constructor for the HangmanManager objects. 
+ *This constructor initialises the state of any new object formed
+ *@param dictionary dictionary of words to be used for the game which is in the form of ArrayList
+ *@param length length of words in the dictionary to be considered for the game
+ *@param max the maximum number of errors that the user is allowed to make for the game to continue
+ *@throws IllegalArgumentException if the length of words to be considered in dictionary is less than one
+ *or if the number of wrong guesses to be made by user is negative.
+ */
+ public HangmanManager(List<String> dictionary,int length,int max) {
+ /*Throwing exception if the length is less than one
+ or the max guesses is less than zero.
+ */
+ if(length<1 || max<0){throw new IllegalArgumentException();} 
+  maxLength=length;
+  maximum=max;
+  mySet=new TreeSet<String>();
+  mySorted=new TreeSet<Character>();
+  //Creating the default pattern using the number of words to be used.
+  pattern="";
+  for(int i=0; i<maxLength; i++){pattern+="-";}
+  
+  /*Adding the words from the dictionary whose length is the given length.
+  */
+  for(int i=0; i<dictionary.size(); i++){
+   if(dictionary.get(i).length()==maxLength){
+   mySet.add(dictionary.get(i));
+   }
+  }
+ }  
+  /**Returns the current list of words being considered for the game by the HangmanManager as a set
+  *@return the current set of words being used in the game.
+  */
+ public Set<String> words() {return mySet;}
+ /**Returns the current number of guesses left in the game.
+  *@return the current number of guesses to be used in the next round.
+  */
+ public int guessesLeft() {return maximum;}
+/**Returns the set of all the characters guessed by the user in a sorted manner
+*@return the sorted set of all the characters guessed by the user.
+*/
+ public SortedSet<Character> guesses() {return mySorted;}
+ /**Returns the current pattern to be displayed for the hangman considering all the other guesses
+ *that have already been made.
+ *@return the current pattern to be displayed for the hangman in the game
+ *@throws IllegalStateException if the set of words to be considered is empty
+ */
+ public String pattern() {
+ char l=pattern.charAt(0);
+ String word="";
+ for(int i=1; i<pattern.length(); i++) {
+ word+=" "+pattern.charAt(i);
+ }
+ return l+word ;
+ }
+/**Records the next guess made by the user and decides the set of words to 
+*be used for the coming rounds of the game.Returns the number of occurences
+*of the character input in the current pattern.Updates the number of guesses left.
+*@param guess the character guess which the user inputs.
+*@return the number of occurences of the character input in the new pattern.
+*@throw IllegalStateException if the List of words to be used is empty or the number of guesses
+*left is negative.
+*@throw IllegalArgumentException if the List of words is empty and if the SortedSet already contains 
+*the character input by the user.
+*/
+ public int record(char guess) {
+ String a=guess+"";
+  mySorted.add(guess);
+   Map<String,Set<String>> myMap=new TreeMap<>();
+   
+ if(maximum<1 || mySet.isEmpty()){throw new IllegalStateException();}
+ if(mySet.isEmpty() && mySorted.contains(guess)){throw new IllegalArgumentException();}
+ /* Goes through the current set(dictionary) of words
+ */
+ for(String word:mySet){
+ /* creates a test pattern for each word present in the set.
+  the pattern is stored in a String.
+ */
+ String text = myPattern(word,guess);
+ /* Adds the pattern created to the map.
+ If the pattern already has a mapping, the word with 
+ the associated pattern is added to the set.
+ If the map does not contain the pattern, a new mapping in which 
+ the pattern is mapped to a new empty set of all words of a similar pattern
+ the word is then added to the set.
+ */
+  if(myMap.containsKey(text)){
+ myMap.get(text).add(word);
+ }else{
+ myMap.put(text,new TreeSet<String>());
+ myMap.get(text).add(word);
+ }
+}
+/* Goes through all elements in the Map's key set and if any element 
+is mapped to a set whose size is greater than the biggest number, the biggest 
+number becomes that size. Also, for any element in the keySet whose associated
+set is greater than the current biggest, the bigSet variable becomes the element.
+*/
+ int biggest=0;
+String bigSet="";
+for(String sequence:myMap.keySet()){
+ if(myMap.get(sequence).size()>biggest){
+ biggest=myMap.get(sequence).size();
+ bigSet=sequence;
+  }
+}
+/*Creating an array that will enable me to update the characters in my current pattern
+*/
+char[] myChar=pattern.toCharArray();
+if(bigSet.contains(a)) {
+  for(int i=0; i<bigSet.length(); i++ ) {
+   if(bigSet.charAt(i)==guess){
+   //updating the characters in the array 
+   myChar[i]=guess;
+   }
+  }
+}
+//converting the array back to a String
+//the string is the current pattern for the program.
+pattern=String.valueOf(myChar);
+   /*Going through the bigSet to get the number of times the 
+   character occurs in the bigSet
+   */
+int num=0;
+  for(int i=0; i<pattern.length(); i++){
+   if(pattern.charAt(i)==guess){
+   num++;
+   }
+  }
+/*updating the set of words to be used subsequently 
+*/
+ mySet.retainAll(myMap.get(bigSet));
+/*If the number which is to be returned by the 
+record method is zero then the number of guesses let should be reduced by one
+*/
+  if(num==0){maximum--;}
+ return num;
+}
+/**Returns a pattern of characters present in the word.
+*@param word the word to be considered
+*@param a the character whose pattern is to be gotten in the word
+*@return the pattern of characters present in the word. 
+*/
+ public String myPattern(String word,char a){
+ String text="";
+  for(int i=0; i<word.length(); i++){
+   if(word.charAt(i)==a){
+   text+=word.charAt(i);
+   }else{
+  text+="-";
+  }
+ }
+ return text;
+ }
+}
